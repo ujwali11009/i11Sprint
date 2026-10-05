@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  EMPLOYEE
+  ADMIN
+}
+
+enum TaskType {
+  Operational
+  Design
+  Deployment
+  Development
+}
+
+enum AttendanceStatus {
+  PRESENT
+  WORK_FROM_HOME
+  LEAVE
+  ABSENT
+}
+
+enum LeaveType {
+  ANNUAL_LEAVE
+  CASUAL_LEAVE
+  SICK_LEAVE
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  passwordHash   String
+  fullName       String
+  role           Role     @default(EMPLOYEE)
+  jobTitle       String   @default("Team Member")
+  avatarUrl      String?
+  department     String   @default("Product")
+  employmentType String   @default("Full-time")
+  phoneNumber    String?
+  employeeCode   String?
+  bio            String?
+  skills         String[] @default([])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tasksAssigned    Task[]              @relation("TaskAssignee")
+  taskComments     TaskComment[]
+  meetingsCreated  Meeting[]           @relation("MeetingCreator")
+  meetingMembers   MeetingParticipant[]
+  clockLogs        ClockLog[]
+  leaveRequests    LeaveRequest[]      @relation("UserLeaveRequests")
+  approvedLeaves   LeaveRequest[]      @relation("AdminApprovedLeaves")
+
+  @@index([email])
+}
+
+model Project {
+  id              String    @id @default(uuid())
+  name            String
+  parentProjectId String?
+  parentProject   Project?  @relation("ProjectChildren", fields: [parentProjectId], references: [id], onDelete: Cascade)
+  children        Project[] @relation("ProjectChildren")
+  tasks           Task[]
+  createdAt       DateTime  @default(now())
+}
+
+model CustomStatus {
+  id        String   @id @default(uuid())
+  name      String
+  color     String
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id                String        @id @default(uuid())
+  title             String
+  description       String?
+  status            String        @default("IN PROGRESS")
+  type              TaskType      @default(Operational)
+  dueDate           DateTime?
+  isAsap            Boolean       @default(false)
+  isHighlighted     Boolean       @default(false)
+  assigneeId        String
+  assignee          User          @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  projectId         String?
+  project           Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  comments          TaskComment[]
+  attachments       Attachment[]
+  subtasks          Subtask[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([status])
+}
+
+model TaskComment {
+  id        String   @id @default(uuid())
+  content   String
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Subtask {
+  id          String  @id @default(uuid())
+  taskId      String
+  task        Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  title       String
+  isCompleted Boolean @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Attachment {
+  id     String @id @default(uuid())
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  name   String
+  size   String
+}
+
+model Meeting {
+  id            String               @id @default(uuid())
+  title         String
+  description   String
+  date          DateTime             @default(now())
+  startTime     String
+  endTime       String
+  timezone      String
+  timezoneName  String
+  meetingLink   String
+  meetingNotes  String
+  status        String               @default("Pending")
+  createdById   String
+  createdBy     User                 @relation("MeetingCreator", fields: [createdById], references: [id])
+  participants  MeetingParticipant[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+}
+
+model MeetingParticipant {
+  id        String   @id @default(uuid())
+  meetingId String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([meetingId, userId])
+}
+
+model ClockLog {
+  id           String            @id @default(uuid())
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date         DateTime          @default(now())
+  status       AttendanceStatus  @default(PRESENT)
+  clockInTime  DateTime?
+  clockOutTime DateTime?
+  workedHours  String?
+  createdAt    DateTime          @default(now())
+
+  @@index([userId, date])
+}
+
+model LeaveRequest {
+  id           String      @id @default(uuid())
+  userId       String
+  user         User        @relation("UserLeaveRequests", fields: [userId], references: [id], onDelete: Cascade)
+  leaveType    LeaveType
+  startDate    DateTime
+  endDate      DateTime
+  totalDays    Int
+  reason       String
+  status       LeaveStatus @default(PENDING)
+  approvedById String?
+  approvedBy   User?       @relation("AdminApprovedLeaves", fields: [approvedById], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
