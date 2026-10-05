@@ -6,6 +6,7 @@ import type { BoardColumnConfig } from './AddBoardModal';
 interface KanbanBoardProps {
   tasks: Task[];
   columns?: BoardColumnConfig[];
+  isAdmin?: boolean;
   onTaskStatusChange?: (taskId: string, newStatus: TaskStatus) => void;
   onAddNewTaskClick: (defaultStatus?: string) => void;
   onTaskClick?: (task: Task) => void;
@@ -14,6 +15,7 @@ interface KanbanBoardProps {
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   tasks,
   columns,
+  isAdmin = true,
   onAddNewTaskClick,
   onTaskClick,
 }) => {
@@ -102,13 +104,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 </span>
               </div>
 
-              <button
-                onClick={() => onAddNewTaskClick(col.title)}
-                className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-white transition-colors"
-                title={`Add task under ${col.title}`}
-              >
-                <Plus className="w-4 h-4" />
-              </button>
+              {isAdmin && (
+                <button
+                  onClick={() => onAddNewTaskClick(col.title)}
+                  className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-white transition-colors"
+                  title={`Add task under ${col.title}`}
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* Task Cards Column */}
@@ -187,14 +191,16 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 );
               })}
 
-              {/* Add Task Quick Trigger at bottom of column */}
-              <button
-                onClick={() => onAddNewTaskClick(col.title)}
-                className="w-full py-3 px-3 rounded-2xl border border-dashed border-slate-300/80 hover:border-indigo-400 hover:bg-white text-slate-500 hover:text-indigo-600 text-xs font-normal flex items-center justify-center gap-1.5 transition-all"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Task</span>
-              </button>
+              {/* Add Task Quick Trigger at bottom of column (admin only) */}
+              {isAdmin && (
+                <button
+                  onClick={() => onAddNewTaskClick(col.title)}
+                  className="w-full py-3 px-3 rounded-2xl border border-dashed border-slate-300/80 hover:border-indigo-400 hover:bg-white text-slate-500 hover:text-indigo-600 text-xs font-normal flex items-center justify-center gap-1.5 transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add Task</span>
+                </button>
+              )}
             </div>
           </div>
         );

@@ -30,3 +30,22 @@ export const useLogout = () => {
     },
   });
 };
+
+interface NewEmployeePayload {
+  fullName: string;
+  email: string;
+  jobTitle?: string;
+  department?: string;
+  role?: 'EMPLOYEE' | 'ADMIN';
+}
+
+export const useCreateEmployee = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: NewEmployeePayload) =>
+      api.post<{ user: User; temporaryPassword: string }>('/auth/employees', payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
+};

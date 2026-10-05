@@ -17,6 +17,7 @@ interface HeaderProps {
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   onAddNewClick: () => void;
+  showAddNew?: boolean;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   currentUser: User;
@@ -27,6 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
   viewMode,
   onViewModeChange,
   onAddNewClick,
+  showAddNew = true,
   searchQuery,
   onSearchChange,
   currentUser,
@@ -41,13 +43,15 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Left controls: Add New button + View Tabs */}
       <div className="flex items-center gap-4">
         {/* Primary "+ Add new" button */}
-        <button
-          onClick={onAddNewClick}
-          className="bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-semibold text-xs px-4 py-2.5 rounded-full shadow-md shadow-slate-900/15 flex items-center gap-2 transition-all active:scale-[0.98]"
-        >
-          <Plus className="w-4 h-4 stroke-3" />
-          <span>Add new</span>
-        </button>
+        {showAddNew && (
+          <button
+            onClick={onAddNewClick}
+            className="bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-semibold text-xs px-4 py-2.5 rounded-full shadow-md shadow-slate-900/15 flex items-center gap-2 transition-all active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4 stroke-3" />
+            <span>Add new</span>
+          </button>
+        )}
 
         {/* View Switcher Segmented Pill */}
         <div className="flex items-center gap-1 bg-slate-100 rounded-full p-1 text-xs font-medium">

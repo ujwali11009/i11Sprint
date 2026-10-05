@@ -20,6 +20,7 @@ import type { Task, TaskStatus, CustomStatusItem } from '../../types/workspace';
 interface TaskTableProps {
   tasks: Task[];
   customStatuses?: CustomStatusItem[];
+  isAdmin?: boolean;
   onTaskStatusChange: (taskId: string, newStatus: TaskStatus) => void;
   onAddNewTaskClick: () => void;
   onOpenAddStatusModal?: () => void;
@@ -30,6 +31,7 @@ interface TaskTableProps {
 export const TaskTable: React.FC<TaskTableProps> = ({
   tasks,
   customStatuses = [],
+  isAdmin = true,
   onTaskStatusChange,
   onAddNewTaskClick,
   onOpenAddStatusModal,
@@ -260,20 +262,22 @@ export const TaskTable: React.FC<TaskTableProps> = ({
                     </tr>
                   ))}
 
-                  {/* Inline Add Task Row */}
-                  <tr>
-                    <td colSpan={5} className="py-3.5 px-6">
-                      <button
-                        onClick={onAddNewTaskClick}
-                        className="text-indigo-600 hover:text-indigo-700 font-normal text-xs flex items-center gap-2 group transition-colors"
-                      >
-                        <div className="w-5 h-5 rounded-full border border-indigo-200 group-hover:border-indigo-500 flex items-center justify-center text-indigo-600">
-                          <Plus className="w-3.5 h-3.5 stroke-[2]" />
-                        </div>
-                        <span>Add new task</span>
-                      </button>
-                    </td>
-                  </tr>
+                  {/* Inline Add Task Row (admin only — only admins assign tasks) */}
+                  {isAdmin && (
+                    <tr>
+                      <td colSpan={5} className="py-3.5 px-6">
+                        <button
+                          onClick={onAddNewTaskClick}
+                          className="text-indigo-600 hover:text-indigo-700 font-normal text-xs flex items-center gap-2 group transition-colors"
+                        >
+                          <div className="w-5 h-5 rounded-full border border-indigo-200 group-hover:border-indigo-500 flex items-center justify-center text-indigo-600">
+                            <Plus className="w-3.5 h-3.5 stroke-[2]" />
+                          </div>
+                          <span>Add new task</span>
+                        </button>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

@@ -18,6 +18,7 @@ interface WorkspaceSidebarProps {
   onSelectProject: (projectId: string) => void;
   onAddProjectClick: () => void;
   onInviteClick?: () => void;
+  showInvite?: boolean;
 }
 
 export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
@@ -26,6 +27,7 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
   onSelectProject,
   onAddProjectClick,
   onInviteClick,
+  showInvite = true,
 }) => {
   const [isProjectsOpen, setIsProjectsOpen] = useState(true);
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
@@ -143,16 +145,18 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
         </div>
       </div>
 
-      {/* Bottom Invite Button */}
-      <div className="p-4 pt-2">
-        <button
-          onClick={onInviteClick}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-medium py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs shadow-md shadow-emerald-900/30 transition-all group"
-        >
-          <UserPlus className="w-4 h-4 group-hover:scale-110 transition-transform" />
-          <span>Invite people</span>
-        </button>
-      </div>
+      {/* Bottom Invite Button (admin only) */}
+      {showInvite && (
+        <div className="p-4 pt-2">
+          <button
+            onClick={onInviteClick}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-medium py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-xs shadow-md shadow-emerald-900/30 transition-all group"
+          >
+            <UserPlus className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            <span>Add Employee</span>
+          </button>
+        </div>
+      )}
     </aside>
   );
 };

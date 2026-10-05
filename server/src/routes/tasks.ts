@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import type { Prisma } from '@prisma/client';
 
 export const tasksRouter = Router();
@@ -72,7 +72,7 @@ const createTaskSchema = z.object({
   projectId: z.string().uuid().optional().nullable(),
 });
 
-tasksRouter.post('/', async (req, res) => {
+tasksRouter.post('/', requireAdmin, async (req, res) => {
   const parsed = createTaskSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() });
@@ -86,13 +86,22 @@ tasksRouter.post('/', async (req, res) => {
 });
 
 const updateTaskSchema = createTaskSchema.partial();
+const employeeUpdateTaskSchema = z.object({ status: z.string() }).strict();
 
 tasksRouter.patch('/:id', async (req, res) => {
-  const parsed = updateTaskSchema.safeParse(req.body);
+  const isAdmin = req.user!.role === 'ADMIN';
+  const parsed = isAdmin
+    ? updateTaskSchema.safeParse(req.body)
+    : employeeUpdateTaskSchema.safeParse(req.body);
+
   if (!parsed.success) {
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Only admins can edit task details — employees can only change status.' });
+    }
     return res.status(400).json({ error: parsed.error.flatten() });
   }
-  const { dueDate, ...rest } = parsed.data;
+
+  const { dueDate, ...rest } = parsed.data as z.infer<typeof updateTaskSchema>;
   try {
     const task = await prisma.task.update({
       where: { id: req.params.id },
@@ -105,7 +114,7 @@ tasksRouter.patch('/:id', async (req, res) => {
   }
 });
 
-tasksRouter.delete('/:id', async (req, res) => {
+tasksRouter.delete('/:id', requireAdmin, async (req, res) => {
   try {
     await prisma.task.delete({ where: { id: req.params.id } });
     res.status(204).send();

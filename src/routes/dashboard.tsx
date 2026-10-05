@@ -18,7 +18,7 @@ import { RequireAuth } from '../components/auth/RequireAuth';
 import { DockTabs, type DockItem } from '../components/ui/dock-tabs';
 import { UserCheck, Rocket, Pencil, Code, Folder, Plus, UserPlus } from 'lucide-react';
 import type { Task, TaskStatus } from '../types/workspace';
-import { useCurrentUser } from '../hooks/useAuth';
+import { useCurrentUser, useCreateEmployee } from '../hooks/useAuth';
 import { useTeam } from '../hooks/useTeam';
 import { useProjects, useCreateProject } from '../hooks/useProjects';
 import { useCustomStatuses, useCreateCustomStatus } from '../hooks/useCustomStatuses';
@@ -45,6 +45,7 @@ const DashboardContent = () => {
   const addTaskComment = useAddTaskComment();
   const addSubtask = useAddSubtask();
   const toggleSubtask = useToggleSubtask();
+  const createEmployee = useCreateEmployee();
 
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,6 +73,8 @@ const DashboardContent = () => {
   ]);
 
   if (!currentUser) return null;
+
+  const isAdmin = currentUser.role === 'ADMIN';
 
   const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? null;
   const commentingTask = tasks.find((t) => t.id === commentingTaskId) ?? null;
@@ -125,20 +128,24 @@ const DashboardContent = () => {
       color: 'bg-indigo-600 shadow-indigo-600/30',
       onClick: () => setActiveCategory('Operational')
     },
-    {
-      id: 'add-task',
-      name: 'Add New Task',
-      icon: <Plus />,
-      color: 'bg-slate-800 shadow-slate-900/30',
-      onClick: () => setIsAddTaskModalOpen(true)
-    },
-    {
-      id: 'invite',
-      name: 'Invite Team',
-      icon: <UserPlus />,
-      color: 'bg-slate-800 shadow-slate-900/30',
-      onClick: () => setIsInviteModalOpen(true)
-    },
+    ...(isAdmin
+      ? [
+          {
+            id: 'add-task',
+            name: 'Add New Task',
+            icon: <Plus />,
+            color: 'bg-slate-800 shadow-slate-900/30',
+            onClick: () => setIsAddTaskModalOpen(true),
+          },
+          {
+            id: 'invite',
+            name: 'Add Employee',
+            icon: <UserPlus />,
+            color: 'bg-slate-800 shadow-slate-900/30',
+            onClick: () => setIsInviteModalOpen(true),
+          },
+        ]
+      : []),
   ];
 
   const handleTaskStatusChange = (taskId: string, newStatus: TaskStatus) => {
@@ -179,6 +186,7 @@ const DashboardContent = () => {
         onSelectProject={setCurrentProjectId}
         onAddProjectClick={() => setIsAddProjectModalOpen(true)}
         onInviteClick={() => setIsInviteModalOpen(true)}
+        showInvite={isAdmin}
       />
 
       {/* Main Workspace Area */}
@@ -188,6 +196,7 @@ const DashboardContent = () => {
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           onAddNewClick={() => setIsAddTaskModalOpen(true)}
+          showAddNew={isAdmin}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           currentUser={currentUser}
@@ -216,6 +225,7 @@ const DashboardContent = () => {
             <TaskTable
               tasks={filteredTasks}
               customStatuses={customStatuses}
+              isAdmin={isAdmin}
               onTaskStatusChange={handleTaskStatusChange}
               onAddNewTaskClick={() => setIsAddTaskModalOpen(true)}
               onOpenAddStatusModal={() => setIsAddCustomStatusModalOpen(true)}
@@ -230,6 +240,7 @@ const DashboardContent = () => {
               <KanbanBoard
                 tasks={filteredTasks}
                 columns={boardColumns}
+                isAdmin={isAdmin}
                 onTaskStatusChange={handleTaskStatusChange}
                 onAddNewTaskClick={() => setIsAddTaskModalOpen(true)}
                 onTaskClick={handleTaskClick}
@@ -263,6 +274,7 @@ const DashboardContent = () => {
       <InviteModal
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
+        onCreateEmployee={(payload) => createEmployee.mutateAsync(payload)}
       />
 
       <TaskDetailsModal
