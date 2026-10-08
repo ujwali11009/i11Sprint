@@ -187,6 +187,7 @@ const DashboardContent = () => {
         onAddProjectClick={() => setIsAddProjectModalOpen(true)}
         onInviteClick={() => setIsInviteModalOpen(true)}
         showInvite={isAdmin}
+        showAddProject={isAdmin}
       />
 
       {/* Main Workspace Area */}

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, requireAdmin } from '../middleware/auth.js';
 
 export const projectsRouter = Router();
 
@@ -17,7 +17,7 @@ const createProjectSchema = z.object({
   parentProjectId: z.string().uuid().nullable().optional(),
 });
 
-projectsRouter.post('/', async (req, res) => {
+projectsRouter.post('/', requireAdmin, async (req, res) => {
   const parsed = createProjectSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: parsed.error.flatten() });

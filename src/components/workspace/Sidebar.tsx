@@ -8,7 +8,9 @@ import {
   LayoutGrid,
   Settings,
   HelpCircle,
+  LogOut,
 } from "lucide-react";
+import { useLogout } from "../../hooks/useAuth";
 
 interface NavItem {
   label: string;
@@ -26,8 +28,15 @@ const navItems: NavItem[] = [
 export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const logout = useLogout();
 
   const isActive = (path: NavItem["path"]) => location.pathname.includes(path);
+
+  const handleLogout = () => {
+    logout.mutate(undefined, {
+      onSuccess: () => navigate({ to: "/login", replace: true }),
+    });
+  };
 
   return (
     <aside className="w-18 min-w-18 bg-white border-r border-slate-200/80 flex flex-col items-center justify-between py-4 h-full min-h-screen select-none">
@@ -77,6 +86,14 @@ export const Sidebar: React.FC = () => {
           title="Help Center"
         >
           <HelpCircle className="w-5 h-5" />
+        </button>
+        <button
+          onClick={handleLogout}
+          disabled={logout.isPending}
+          className="w-11 h-11 rounded-xl flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-60"
+          title="Log Out"
+        >
+          <LogOut className="w-5 h-5" />
         </button>
       </div>
     </aside>

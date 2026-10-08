@@ -19,6 +19,7 @@ interface WorkspaceSidebarProps {
   onAddProjectClick: () => void;
   onInviteClick?: () => void;
   showInvite?: boolean;
+  showAddProject?: boolean;
 }
 
 export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
@@ -28,6 +29,7 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
   onAddProjectClick,
   onInviteClick,
   showInvite = true,
+  showAddProject = true,
 }) => {
   const [isProjectsOpen, setIsProjectsOpen] = useState(true);
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
@@ -72,19 +74,23 @@ export const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
               <span>Projects</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isProjectsOpen ? "" : "-rotate-90"}`} />
             </button>
-            <button
-              onClick={onAddProjectClick}
-              className="p-1 rounded-md text-white/40 hover:text-white hover:bg-white/10 transition-colors"
-              title="Add new project"
-            >
-              <Plus className="w-3.5 h-3.5" />
-            </button>
+            {showAddProject && (
+              <button
+                onClick={onAddProjectClick}
+                className="p-1 rounded-md text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                title="Add new project"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           {isProjectsOpen && (
             <div className="space-y-0.5">
               {topLevelProjects.length === 0 && (
-                <p className="px-3 py-2 text-[11px] text-white/40">No projects yet — add one above.</p>
+                <p className="px-3 py-2 text-[11px] text-white/40">
+                  {showAddProject ? 'No projects yet — add one above.' : 'No projects yet.'}
+                </p>
               )}
               {topLevelProjects.map((proj) => {
                 const children = childrenOf(proj.id);
